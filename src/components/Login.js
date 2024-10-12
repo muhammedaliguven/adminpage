@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -7,12 +8,35 @@ const Login = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async  (e) => {
     e.preventDefault();
 
     // Varsayılan kullanıcı adı ve şifre
     const validUsername = "admin";
     const validPassword = "123";
+
+    try {
+      const response = await axios.post('/api/user/isPresent', {
+        username,
+        password,
+      });
+      console.log(response)
+      // Başarılı giriş
+      if (response.data) {
+        // Token'ı localStorage'da saklayın (ya da isteğe bağlı başka bir yerde)
+        localStorage.setItem('token', response.data.token);
+
+        // Ana sayfaya yönlendir
+        navigate('/sidebar');
+      }
+    } catch (error) {
+      // Hata durumunda hata mesajını göster
+      console.log(error)
+      setError('Kullanıcı adı veya şifre hatalı!');
+    }
+
+
+
 
     // Kullanıcı adı ve şifreyi kontrol et
     if (username === validUsername && password === validPassword) {
