@@ -15,6 +15,9 @@ const Sidebar = () => {
         <li style={styles.li}>
           <Link to="/page3">Sayfa 3</Link>
         </li>
+        <li style={styles.li}>
+          <Link to="/page4">Sayfa 4</Link>
+        </li>
       </ul>
     </div>
   );
