@@ -72,3 +72,8 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 ### gerekli olan kütüphaneler 
 npm install  react-table
 npm install react-router-dom
+
+
+### cross origin hatasini gecmek icin  package-lock.json ve package.json dosyalarina eklenen config 
+  "proxy": "https://aktuelapi-production.up.railway.app",  -> remote 
+  "proxy": "http://localhost:8080", ->local

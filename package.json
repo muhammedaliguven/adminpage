@@ -1,5 +1,5 @@
 {
-  "proxy": "https://aktuelapi-production.up.railway.app",
+  "proxy": "http://localhost:8080",
   "name": "adminpage",
   "version": "0.1.0",
   "private": true,

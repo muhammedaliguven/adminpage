@@ -7,16 +7,13 @@ const Sidebar = () => {
       <h3>Menü</h3>
       <ul style={styles.ul}>
         <li style={styles.li}>
-          <Link to="/products">Ürünler </Link>
-        </li>
-        <li style={styles.li}>
           <Link to="/page2">Sayfa 2</Link>
         </li>
         <li style={styles.li}>
-          <Link to="/page3">Sayfa 3</Link>
+          <Link to="/category">Category</Link>
         </li>
         <li style={styles.li}>
-          <Link to="/page4">Sayfa 4</Link>
+          <Link to="/mark">Mark</Link>
         </li>
       </ul>
     </div>

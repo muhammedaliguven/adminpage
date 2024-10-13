@@ -2,11 +2,14 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./components/Login";
 import Sidebar from "./components/Sidebar";
-import Products from "./components/Products";
-import Page2 from "./components/Page2";
+import Category from "./components/Category";
 import Page3 from "./components/Page3";
-import Page4 from "./components/Page4";
+import Mark from "./components/Mark";
 
+/*
+  "proxy": "https://aktuelapi-production.up.railway.app",
+  "proxy": "http://localhost:8080",
+*/
 
 const App = () => {
   return (
@@ -14,10 +17,9 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/sidebar" element={<Sidebar />} />
-        <Route path="/products" element={<Products />} />
-        <Route path="/page2" element={<Page2 />} />
+        <Route path="/category" element={<Category />} />
        <Route path="/page3" element={<Page3 />} />
-       <Route path="/page4" element={<Page4 />} />
+       <Route path="/mark" element={<Mark />} />
       </Routes>
     </Router>
   );

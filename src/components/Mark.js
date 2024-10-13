@@ -12,80 +12,80 @@ import {
 } from '@mui/material';
 
 function Page4() {
-  const [products, setProducts] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [marks, setMarks] = useState([]);
+  const [selectedMark, setSelectedMark] = useState(null);
   const [open, setOpen] = useState(false);
   const { register, handleSubmit, reset } = useForm();
 
   useEffect(() => {
-    fetchProducts();
+    fetchMarks();
   }, []);
 
   // Ürün listesini API'den al
-  const fetchProducts = () => {
+  const fetchMarks = () => {
     axios.get('/api/mark/getAll')
       .then((response) => {
-        setProducts(response.data);
+        setMarks(response.data);
       })
       .catch((error) => {
-        console.error("Error fetching products:", error);
+        console.error("Error fetching marks:", error);
       });
   };
 
   // Yeni ürün ekleme
-  const addProduct = (data) => {
-    axios.post('https://api.example.com/products', data)
+  const addMark = (data) => {
+    axios.post('/api/mark/create', data)
       .then((response) => {
-        setProducts([...products, response.data]);
+        setMarks([...marks, response.data]);
         setOpen(false);
         reset();
       })
       .catch((error) => {
-        console.error("Error adding product:", error);
+        console.error("Error adding mark:", error);
       });
   };
 
   // Ürünü güncelleme
-  const updateProduct = (data) => {
-    axios.put(`https://api.example.com/products/${selectedProduct.id}`, data)
+  const updateMark = (data) => {
+    axios.put(`/api/mark/update/${selectedMark.id}`, data)
       .then((response) => {
-        const updatedProducts = products.map((product) =>
-          product.id === selectedProduct.id ? response.data : product
+        const updatedMarks = marks.map((mark) =>
+          mark.id === selectedMark.id ? response.data : mark
         );
-        setProducts(updatedProducts);
+        setMarks(updatedMarks);
         setOpen(false);
         reset();
       })
       .catch((error) => {
-        console.error("Error updating product:", error);
+        console.error("Error updating mark:", error);
       });
   };
 
   // Ürünü silme
-  const deleteProduct = (id) => {
-    axios.delete(`https://api.example.com/products/${id}`)
+  const deleteMark = (id) => {
+    axios.delete(`/api/mark/delete/${id}`)
       .then(() => {
-        setProducts(products.filter((product) => product.id !== id));
+        setMarks(marks.filter((mark) => mark.id !== id));
       })
-      .catch((error) => {
-        console.error("Error deleting product:", error);
+      .catch((error) => { 
+        console.error("Error deleting mark:", error);
       });
   };
 
   // Formu gönderme işlevi (yeni ekleme veya güncelleme)
   const onSubmit = (data) => {
-    if (selectedProduct) {
-      updateProduct(data);
+    if (selectedMark) {
+      updateMark(data);
     } else {
-      addProduct(data);
+      addMark(data);
     }
   };
 
   // Ürün ekleme veya düzenleme için formu açma
-  const handleOpenForm = (product = null) => {
-    setSelectedProduct(product);
-    if (product) {
-      reset(product); // Güncelleme için mevcut ürünü forma yükle
+  const handleOpenForm = (mark = null) => {
+    setSelectedMark(mark);
+    if (mark) {
+      reset(mark); // Güncelleme için mevcut ürünü forma yükle
     }
     setOpen(true);
   };
@@ -99,7 +99,9 @@ function Page4() {
   // DataGrid için kolonlar
   const columns = [
     { field: 'id', headerName: 'ID', width: 90 },
-    { field: 'name', headerName: 'Product Name', width: 200 },
+    { field: 'name', headerName: 'Mark Name', width: 200 },
+    { field: 'link', headerName: 'Mark link', width: 200 },
+
     {
       field: 'actions',
       headerName: 'Actions',
@@ -116,7 +118,7 @@ function Page4() {
           <Button
             variant="contained"
             color="secondary"
-            onClick={() => deleteProduct(params.row.id)}
+            onClick={() => deleteMark(params.row.id)}
             style={{ marginLeft: '10px' }}
           >
             Delete
@@ -128,20 +130,26 @@ function Page4() {
 
   return (
     <div style={{ height: 400, width: '100%' }}>
-      <h1>Product List</h1>
+      <h1>Mark List</h1>
       <Button variant="contained" color="primary" onClick={() => handleOpenForm()}>
-        Add Product
+       Add Mark 
       </Button>
-      <DataGrid rows={products} columns={columns} pageSize={5} checkboxSelection />
+      <DataGrid rows={marks} columns={columns} pageSize={5} checkboxSelection />
       
       {/* Ürün ekleme/güncelleme formu için dialog */}
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{selectedProduct ? "Update Product" : "Add Product"}</DialogTitle>
+        <DialogTitle>{selectedMark ? "Update Mark" : "Add Mark"}</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit(onSubmit)}>
             <TextField
               {...register('name', { required: true })}
-              label="Product Name"
+              label="Mark Name"
+              fullWidth
+              margin="dense"
+            />
+            <TextField
+              {...register('link', { required: true })}
+              label="Mark Link"
               fullWidth
               margin="dense"
             />
@@ -150,7 +158,7 @@ function Page4() {
                 Cancel
               </Button>
               <Button type="submit" color="primary">
-                {selectedProduct ? "Update" : "Add"}
+                {selectedMark ? "Update" : "Add"}
               </Button>
             </DialogActions>
           </form>
