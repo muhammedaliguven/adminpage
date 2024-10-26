@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./components/Login";
 import Sidebar from "./components/Sidebar";
 import Category from "./components/Category";
-import Page3 from "./components/Page3";
+import Brochure from "./components/Brochure";
 import Mark from "./components/Mark";
 
 /*
@@ -18,7 +18,7 @@ const App = () => {
         <Route path="/" element={<Login />} />
         <Route path="/sidebar" element={<Sidebar />} />
         <Route path="/category" element={<Category />} />
-       <Route path="/page3" element={<Page3 />} />
+       <Route path="/brochure" element={<Brochure />} />
        <Route path="/mark" element={<Mark />} />
       </Routes>
     </Router>
