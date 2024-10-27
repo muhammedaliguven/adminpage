@@ -21,7 +21,7 @@ function Brochure() {
   const [marks, setMarks] = useState([]);
   const [selectedBrochure, setSelectedBrochure] = useState(null);
   const [open, setOpen] = useState(false);
-  const { register, handleSubmit, reset, setValue } = useForm();
+  const { register, handleSubmit, reset, setValue, watch } = useForm();
 
   useEffect(() => {
     fetchBrochures();
@@ -104,12 +104,9 @@ function Brochure() {
 
   // Formu gönderme işlevi (yeni ekleme veya güncelleme)
   const onSubmit = (data) => {
-    console.log("burda");
     if (selectedBrochure) {
-      console.log("if");
       updateBrochure(data);
     } else {
-      console.log("else");
       addBrochure(data);
     }
   };
@@ -173,6 +170,10 @@ function Brochure() {
     },
   ];
 
+  // watch kullanarak form değerini izleyin
+  const categoryId = watch("categoryId");
+  const markId = watch("markId");
+
   return (
     <div style={{ height: 400, width: '100%' }}>
       <h1>Brochure List</h1>
@@ -196,7 +197,7 @@ function Brochure() {
   <InputLabel>Category</InputLabel>
   <Select
     {...register('categoryId', { required: true })}
-    value={selectedBrochure ? selectedBrochure.categoryId : ""}
+    value={categoryId} // watch ile izleme
     onChange={(e) => setValue("categoryId", e.target.value)} // Değeri güncelle
   >
     {categories.map((category) => (
@@ -211,7 +212,7 @@ function Brochure() {
   <InputLabel>Mark</InputLabel>
   <Select
     {...register('markId', { required: true })}
-    value={selectedBrochure ? selectedBrochure.markId : ""}
+    value={markId} // watch ile izleme
     onChange={(e) => setValue("markId", e.target.value)} // Değeri güncelle
   >
     {marks.map((mark) => (
