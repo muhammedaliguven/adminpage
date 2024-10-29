@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import axios from 'axios';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import {
   Button,
   TextField,
@@ -14,6 +14,11 @@ import {
   FormControl,
   InputLabel,
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs from 'dayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+
 
 function Brochure() {
   const [brochures, setBrochures] = useState([]);
@@ -21,7 +26,7 @@ function Brochure() {
   const [marks, setMarks] = useState([]);
   const [selectedBrochure, setSelectedBrochure] = useState(null);
   const [open, setOpen] = useState(false);
-  const { register, handleSubmit, reset, setValue, watch } = useForm();
+  const { register, handleSubmit, reset, setValue, control } = useForm();
 
   useEffect(() => {
     fetchBrochures();
@@ -29,7 +34,6 @@ function Brochure() {
     fetchMarks();
   }, []);
 
-  // Broşür listesini API'den al
   const fetchBrochures = () => {
     axios.get('/api/brochure/getAll')
       .then((response) => {
@@ -40,7 +44,6 @@ function Brochure() {
       });
   };
 
-  // Kategori listesini API'den al
   const fetchCategories = () => {
     axios.get('/api/category/getAll')
       .then((response) => {
@@ -51,8 +54,7 @@ function Brochure() {
       });
   };
 
-   // Marka listesini API'den al
-   const fetchMarks = () => {
+  const fetchMarks = () => {
     axios.get('/api/mark/getAll')
       .then((response) => {
         setMarks(response.data);
@@ -62,7 +64,6 @@ function Brochure() {
       });
   };
 
-  // Yeni broşür ekleme
   const addBrochure = (data) => {
     axios.post('/api/brochure/create', data)
       .then((response) => {
@@ -75,7 +76,6 @@ function Brochure() {
       });
   };
 
-  // Broşürü güncelleme
   const updateBrochure = (data) => {
     axios.put(`/api/brochure/update/${selectedBrochure.id}`, data)
       .then((response) => {
@@ -91,7 +91,6 @@ function Brochure() {
       });
   };
 
-  // Broşürü silme
   const deleteBrochure = (id) => {
     axios.delete(`/api/brochure/delete/${id}`)
       .then(() => {
@@ -102,7 +101,6 @@ function Brochure() {
       });
   };
 
-  // Formu gönderme işlevi (yeni ekleme veya güncelleme)
   const onSubmit = (data) => {
     if (selectedBrochure) {
       updateBrochure(data);
@@ -111,39 +109,48 @@ function Brochure() {
     }
   };
 
-  // Broşür ekleme veya düzenleme için formu açma
-  const handleOpenForm = (brochure = null) => {
-    setSelectedBrochure(brochure);
-    if (brochure) {
-      setValue('brochureImage', brochure.brochureImage); // Broşür görüntüsünü ayarlayın
-      setValue('categoryId', brochure.categoryId); // Kategori değerini ayarla
-      setValue('markId', brochure.markId); // Marka değerini ayarla
-    } else {
-      reset(); // Yeni bir form açıldığında sıfırla
-    }
-    setOpen(true);
-  };
+const handleOpenForm = (brochure = null) => {
+  setSelectedBrochure(brochure);
+  if (brochure) {
+    setValue('brochureImage', brochure.brochureImage);
+    setValue('categoryId', brochure.categoryId);  // Category seçimi
+    setValue('markId', brochure.markId);          // Mark seçimi
+    setValue('startDate', dayjs(brochure.startDate));
+    setValue('endDate', dayjs(brochure.endDate));
+  } else {
+    reset();
+  }
+  setOpen(true);
+};
 
-  // Dialog'u kapatma
   const handleClose = () => {
     setOpen(false);
-    setSelectedBrochure(null); // Seçili broşürü sıfırlayın
+    setSelectedBrochure(null);
   };
 
-  // DataGrid için kolonlar
   const columns = [
     { field: 'id', headerName: 'ID', width: 90 },
-    { field: 'startDate', headerName: 'StartDate', width: 200 },
-    { field: 'endDate', headerName: 'EndDate', width: 200 },
-    { field: 'markId', headerName: 'Mark', width: 200, valueGetter: (markId) => {
-      const mark = marks.find(mark => mark.id === markId);
-      return mark ? mark.name : '';
-  }},
-    { field: 'categoryId', headerName: 'Category', width: 200, valueGetter: (categoryId) => {
-        const category = categories.find(category => category.id === categoryId);
+    { field: 'startDate', headerName: 'Start Date', width: 200 },
+    { field: 'endDate', headerName: 'End Date', width: 200 },
+    {
+      field: 'markId',
+      headerName: 'Mark',
+      width: 200,
+      valueGetter: (params) => {
+        const mark = marks.find(mark => mark.id === params);
+        return mark ? mark.name : '';
+      },
+    },
+    {
+      field: 'categoryId',
+      headerName: 'Category',
+      width: 200,
+      valueGetter: (params) => {
+        const category = categories.find(category => category.id === params);
         return category ? category.name : '';
-    }},
-    { field: 'brochureImage', headerName: 'BrochureImage', width: 200 },
+      },
+    },
+    { field: 'brochureImage', headerName: 'Brochure Image', width: 200 },
     {
       field: 'actions',
       headerName: 'Actions',
@@ -170,70 +177,112 @@ function Brochure() {
     },
   ];
 
-  // watch kullanarak form değerini izleyin
-  const categoryId = watch("categoryId");
-  const markId = watch("markId");
-
   return (
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+
     <div style={{ height: 400, width: '100%' }}>
       <h1>Brochure List</h1>
       <Button variant="contained" color="primary" onClick={() => handleOpenForm()}>
-       Add Brochure 
+        Add Brochure
       </Button>
       <DataGrid rows={brochures} columns={columns} pageSize={5} checkboxSelection />
-      
-      {/* Broşür ekleme/güncelleme formu için dialog */}
+
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{selectedBrochure ? "Update Brochure" : "Add Brochure"}</DialogTitle>
         <DialogContent>
-  <form onSubmit={handleSubmit(onSubmit)}>
-    <TextField
-      {...register('brochureImage', { required: true })}
-      label="Brochure Image"
-      fullWidth
-      margin="dense"
-    />
-   <FormControl fullWidth margin="dense">
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <TextField
+              {...register('brochureImage', { required: true })}
+              label="Brochure Image"
+              fullWidth
+              margin="dense"
+            />
+     <FormControl fullWidth margin="dense">
   <InputLabel>Category</InputLabel>
-  <Select
-    {...register('categoryId', { required: true })}
-    value={categoryId} // watch ile izleme
-    onChange={(e) => setValue("categoryId", e.target.value)} // Değeri güncelle
-  >
-    {categories.map((category) => (
-      <MenuItem key={category.id} value={category.id}>
-        {category.name}
-      </MenuItem>
-    ))}
-  </Select>
+  <Controller
+    name="categoryId"
+    control={control}
+    defaultValue={selectedBrochure ? selectedBrochure.categoryId : ''}
+    render={({ field }) => (
+      <Select
+        {...field}
+        onChange={(e) => field.onChange(e.target.value)}
+        label="Category"
+      >
+        {categories.map((category) => (
+          <MenuItem key={category.id} value={category.id}>
+            {category.name}
+          </MenuItem>
+        ))}
+      </Select>
+    )}
+  />
 </FormControl>
 
 <FormControl fullWidth margin="dense">
   <InputLabel>Mark</InputLabel>
-  <Select
-    {...register('markId', { required: true })}
-    value={markId} // watch ile izleme
-    onChange={(e) => setValue("markId", e.target.value)} // Değeri güncelle
-  >
-    {marks.map((mark) => (
-      <MenuItem key={mark.id} value={mark.id}>
-        {mark.name}
-      </MenuItem>
-    ))}
-  </Select>
+  <Controller
+    name="markId"
+    control={control}
+    defaultValue={selectedBrochure ? selectedBrochure.markId : ''}
+    render={({ field }) => (
+      <Select
+        {...field}
+        onChange={(e) => field.onChange(e.target.value)}
+        label="Mark"
+      >
+        {marks.map((mark) => (
+          <MenuItem key={mark.id} value={mark.id}>
+            {mark.name}
+          </MenuItem>
+        ))}
+      </Select>
+    )}
+  />
 </FormControl>
-    <DialogActions>
-      <Button onClick={handleClose} color="secondary">
-        Cancel
-      </Button>
-      <Button type="submit" color="primary">
-        {selectedBrochure ? "Update" : "Add"}
-      </Button>
-    </DialogActions>
-  </form>
-</DialogContent>
+            <Controller
+              name="startDate"
+              control={control}
+              defaultValue={null}
+              render={({ field }) => (
+                <DatePicker
+                  {...field}
+                  label="Start Date"
+                  fullWidth
+                  margin="dense"
+                  renderInput={(params) => <TextField {...params} />}
+                />
+              )}
+            />
+
+            <Controller
+              name="endDate"
+              control={control}
+              defaultValue={null}
+              render={({ field }) => (
+                <DatePicker
+                  {...field}
+                  label="End Date"
+                  fullWidth
+                  margin="dense"
+                  renderInput={(params) => <TextField {...params} />}
+                />
+              )}
+            />
+
+            <DialogActions>
+              <Button onClick={handleClose} color="secondary">
+                Cancel
+              </Button>
+              <Button type="submit" color="primary">
+                {selectedBrochure ? "Update" : "Add"}
+              </Button>
+            </DialogActions>
+          </form>
+        </DialogContent>
       </Dialog>
     </div>
+    </LocalizationProvider>
   );
 }
 
