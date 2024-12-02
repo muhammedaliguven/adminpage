@@ -12,67 +12,77 @@ import {
 } from '@mui/material';
 
 function Category() {
-  const [categorys, setCategorys] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [open, setOpen] = useState(false);
   const { register, handleSubmit, reset } = useForm();
 
   useEffect(() => {
-    fetchCategorys();
+    fetchCategories();
   }, []);
 
-  // Ürün listesini API'den al
-  const fetchCategorys = () => {
+  const fetchCategories = () => {
     axios.get('/api/category/getAll')
       .then((response) => {
-        setCategorys(response.data);
+        setCategories(response.data);
       })
       .catch((error) => {
-        console.error("Error fetching categorys:", error);
+        console.error('Error fetching categories:', error);
       });
   };
 
-  // Yeni ürün ekleme
-  const addCategory = (data) => {
-    axios.post('/api/category/create', data)
-      .then((response) => {
-        setCategorys([...categorys, response.data]);
-        setOpen(false);
-        reset();
-      })
-      .catch((error) => {
-        console.error("Error adding category:", error);
+  const addCategory = async (data) => {
+    const formData = new FormData();
+    formData.append('name', data.name);
+    if (data.image && data.image[0]) {
+      formData.append('image', data.image[0]);
+    }
+
+    try {
+      await axios.post('/api/category/create', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
+      fetchCategories();
+      setOpen(false);
+      reset();
+    } catch (error) {
+      console.error('Error adding category:', error);
+    }
   };
 
-  // Ürünü güncelleme
-  const updateCategory = (data) => {
-    axios.put(`/api/category/update/${selectedCategory.id}`, data)
-      .then((response) => {
-        const updatedCategorys = categorys.map((category) =>
-          category.id === selectedCategory.id ? response.data : category
-        );
-        setCategorys(updatedCategorys);
-        setOpen(false);
-        reset();
-      })
-      .catch((error) => {
-        console.error("Error updating category:", error);
+  const updateCategory = async (data) => {
+    const formData = new FormData();
+    formData.append('name', data.name);
+    if (data.image && data.image[0]) {
+      formData.append('image', data.image[0]);
+    }
+
+    try {
+      await axios.put(`/api/category/update/${selectedCategory.id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
+      fetchCategories();
+      setOpen(false);
+      reset();
+    } catch (error) {
+      console.error('Error updating category:', error);
+    }
   };
 
-  // Ürünü silme
   const deleteCategory = (id) => {
     axios.delete(`/api/category/delete/${id}`)
       .then(() => {
-        setCategorys(categorys.filter((category) => category.id !== id));
+        setCategories(categories.filter((category) => category.id !== id));
       })
-      .catch((error) => { 
-        console.error("Error deleting category:", error);
+      .catch((error) => {
+        console.error('Error deleting category:', error);
       });
   };
 
-  // Formu gönderme işlevi (yeni ekleme veya güncelleme)
   const onSubmit = (data) => {
     if (selectedCategory) {
       updateCategory(data);
@@ -81,27 +91,34 @@ function Category() {
     }
   };
 
-  // Ürün ekleme veya düzenleme için formu açma
   const handleOpenForm = (category = null) => {
     setSelectedCategory(category);
     if (category) {
-      reset(category); // Güncelleme için mevcut ürünü forma yükle
+      reset(category);
     }
     setOpen(true);
   };
 
-  // Dialog'u kapatma
   const handleClose = () => {
     setOpen(false);
     reset();
   };
 
-  // DataGrid için kolonlar
   const columns = [
     { field: 'id', headerName: 'ID', width: 90 },
     { field: 'name', headerName: 'Category Name', width: 200 },
-    { field: 'link', headerName: 'Category link', width: 200 },
-
+    {
+      field: 'image',
+      headerName: 'Image',
+      width: 200,
+      renderCell: (params) => (
+        <img
+          src={`data:image/jpeg;base64,${params.value}`}
+          alt="Category"
+          style={{ width: '100%', height: 'auto' }}
+        />
+      ),
+    },
     {
       field: 'actions',
       headerName: 'Actions',
@@ -132,13 +149,12 @@ function Category() {
     <div style={{ height: 400, width: '100%' }}>
       <h1>Category List</h1>
       <Button variant="contained" color="primary" onClick={() => handleOpenForm()}>
-       Add Category 
+        Add Category
       </Button>
-      <DataGrid rows={categorys} columns={columns} pageSize={5} checkboxSelection />
-      
-      {/* Ürün ekleme/güncelleme formu için dialog */}
+      <DataGrid rows={categories} columns={columns} pageSize={5} checkboxSelection />
+
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{selectedCategory ? "Update Category" : "Add Category"}</DialogTitle>
+        <DialogTitle>{selectedCategory ? 'Update Category' : 'Add Category'}</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit(onSubmit)}>
             <TextField
@@ -147,18 +163,18 @@ function Category() {
               fullWidth
               margin="dense"
             />
-            <TextField
-              {...register('link', { required: true })}
-              label="Category Link"
-              fullWidth
-              margin="dense"
+            <input
+              type="file"
+              {...register('image')}
+              accept="image/*"
+              style={{ marginTop: '16px' }}
             />
             <DialogActions>
               <Button onClick={handleClose} color="secondary">
                 Cancel
               </Button>
               <Button type="submit" color="primary">
-                {selectedCategory ? "Update" : "Add"}
+                {selectedCategory ? 'Update' : 'Add'}
               </Button>
             </DialogActions>
           </form>

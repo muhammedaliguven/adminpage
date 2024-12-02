@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
-import '../Login.css';
+import '../styles.css';
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async  (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     // Varsayılan kullanıcı adı ve şifre
@@ -21,7 +22,7 @@ const Login = () => {
         username,
         password,
       });
-      console.log(response)
+      console.log(response);
       // Başarılı giriş
       if (response.data) {
         // Token'ı localStorage'da saklayın (ya da isteğe bağlı başka bir yerde)
@@ -32,12 +33,9 @@ const Login = () => {
       }
     } catch (error) {
       // Hata durumunda hata mesajını göster
-      console.log(error)
+      console.log(error);
       setError('Kullanıcı adı veya şifre hatalı!');
     }
-
-
-
 
     // Kullanıcı adı ve şifreyi kontrol et
     if (username === validUsername && password === validPassword) {
@@ -50,30 +48,43 @@ const Login = () => {
   };
 
   return (
-    <div>
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
-        <div>
-          <label>Kullanıcı Adı:</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Şifre:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        <button type="submit">Giriş Yap</button>
-      </form>
+    <div className="login-container">
+      <div className="login-box">
+        <h2 className="login-title">Giriş Yap</h2>
+        <form onSubmit={handleLogin} className="login-form">
+          <div className="form-group">
+            <label>Kullanıcı Adı:</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="form-input"
+            />
+          </div>
+          <div className="form-group">
+            <label>Şifre:</label>
+            <div className="password-wrapper">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="form-input"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="show-password-button"
+              >
+                {showPassword ? "Gizle" : "Göster"}
+              </button>
+            </div>
+          </div>
+          {error && <p className="error-message">{error}</p>}
+          <button type="submit" className="login-button">Giriş Yap</button>
+        </form>
+      </div>
     </div>
   );
 };

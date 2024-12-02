@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import axios from 'axios';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import {
   Button,
   TextField,
@@ -9,70 +9,129 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
 } from '@mui/material';
 
-function Page4() {
-  const [marks, setMarks] = useState([]);
-  const [selectedMark, setSelectedMark] = useState(null);
-  const [open, setOpen] = useState(false);
-  const { register, handleSubmit, reset } = useForm();
+const Mark = () => {
+  const [marks, setMarks] = useState([]); // Mark verilerini saklar
+  const [categories, setCategories] = useState([]); // Kategorileri saklar
+  const [selectedMark, setSelectedMark] = useState(null); // Seçili mark
+  const [open, setOpen] = useState(false); // Dialog açık/kapalı durumu
+  const { register, handleSubmit, reset, setValue, control } = useForm(); // React Hook Form kontrolü
 
+  // API'den mark ve kategori verilerini çek
   useEffect(() => {
     fetchMarks();
+    fetchCategories();
   }, []);
 
-  // Ürün listesini API'den al
+  
   const fetchMarks = () => {
-    axios.get('/api/mark/getAll')
+    axios
+      .get('/api/mark/getAll')
       .then((response) => {
-        setMarks(response.data);
+        console.log('Fetched marks:', response.data); // Gelen veriyi konsola yazdır
+        setMarks(response.data); // Gelen veriyi state'e kaydet
       })
       .catch((error) => {
-        console.error("Error fetching marks:", error);
+        console.error('Error fetching marks:', error); // Hata durumunu konsola yazdır
       });
   };
 
-  // Yeni ürün ekleme
-  const addMark = (data) => {
-    axios.post('/api/mark/create', data)
-      .then((response) => {
-        setMarks([...marks, response.data]);
-        setOpen(false);
-        reset();
-      })
-      .catch((error) => {
-        console.error("Error adding mark:", error);
-      });
+  const fetchCategories = () => {
+    axios
+      .get('/api/category/getAll')
+      .then((response) => setCategories(response.data))
+      .catch((error) => console.error('Error fetching categories:', error));
   };
 
-  // Ürünü güncelleme
+  // Form açıldığında verileri doldur veya sıfırla
+  const handleOpenForm = (mark = null) => {
+    setSelectedMark(mark);
+    if (mark) {
+      setValue('name', mark.name);
+      setValue('categoryId', mark.categoryId);
+    } else {
+      reset();
+    }
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    reset();
+    setSelectedMark(null);
+  };
+
+  // Mark ekleme işlemi
+  const addMark = async (data) => {
+    const formData = new FormData();
+    formData.append('name', data.name); // Adı ekle
+    formData.append('categoryId', data.categoryId); // Kategori ID'sini ekle
+    if (data.image && data.image[0]) {
+      formData.append('image', data.image[0]); // Dosyayı ekle
+    }
+  
+    try {
+      await axios.post('/api/mark/create', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      fetchMarks(); // Verileri yenile
+      handleClose(); // Formu kapat
+    } catch (error) {
+      console.error('Error adding mark:', error);
+    }
+  };
+  
+
   const updateMark = (data) => {
-    axios.put(`/api/mark/update/${selectedMark.id}`, data)
-      .then((response) => {
-        const updatedMarks = marks.map((mark) =>
-          mark.id === selectedMark.id ? response.data : mark
-        );
-        setMarks(updatedMarks);
-        setOpen(false);
-        reset();
+    const formData = new FormData();
+    formData.append('name', data.name);
+    if (data.image && data.image[0]) {
+      formData.append('image', data.image[0]); // Dosyayı ekle
+    }
+    formData.append('categoryId', data.categoryId);
+  
+    axios
+      .put(`/api/mark/update/${selectedMark.id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       })
-      .catch((error) => {
-        console.error("Error updating mark:", error);
-      });
-  };
-
-  // Ürünü silme
-  const deleteMark = (id) => {
-    axios.delete(`/api/mark/delete/${id}`)
       .then(() => {
-        setMarks(marks.filter((mark) => mark.id !== id));
+        fetchMarks();
+        handleClose();
       })
-      .catch((error) => { 
-        console.error("Error deleting mark:", error);
-      });
+      .catch((error) => console.error('Error updating mark:', error));
   };
 
-  // Formu gönderme işlevi (yeni ekleme veya güncelleme)
+  // Mark silme işlemi
+  const deleteMark = (id) => {
+    axios
+      .delete(`/api/mark/delete/${id}`)
+      .then(() => fetchMarks())
+      .catch((error) => console.error('Error deleting mark:', error));
+  };
+
+  // Base64 formatına dönüştürme işlemi
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = reader.result.split(',')[1]; // Sadece Base64 kısmını al
+        resolve(base64String);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  // Form gönderimi
   const onSubmit = (data) => {
     if (selectedMark) {
       updateMark(data);
@@ -81,38 +140,41 @@ function Page4() {
     }
   };
 
-  // Ürün ekleme veya düzenleme için formu açma
-  const handleOpenForm = (mark = null) => {
-    setSelectedMark(mark);
-    if (mark) {
-      reset(mark); // Güncelleme için mevcut ürünü forma yükle
-    }
-    setOpen(true);
-  };
-
-  // Dialog'u kapatma
-  const handleClose = () => {
-    setOpen(false);
-    reset();
-  };
-
-  // DataGrid için kolonlar
+  // DataGrid sütunları
   const columns = [
     { field: 'id', headerName: 'ID', width: 90 },
     { field: 'name', headerName: 'Mark Name', width: 200 },
-    { field: 'link', headerName: 'Mark link', width: 200 },
-
+    {
+      field: 'image',
+      headerName: 'Image',
+      width: 200,
+      renderCell: (params) => {
+        const base64Image = params.value; // Değer Base64 string
+        return (
+          <img
+            src={`data:image/jpeg;base64,${base64Image}`} // Base64 formatını görüntüler
+            alt="Mark"
+            style={{ width: '100%', height: 'auto' }}
+          />
+        );
+      },
+    },
+    {
+      field: 'categoryId',
+      headerName: 'Category',
+      width: 200,
+      valueGetter: (params) => {
+        const category = categories.find((cat) => cat.id === params);
+        return category ? category.name : 'N/A';
+      },
+    },
     {
       field: 'actions',
       headerName: 'Actions',
       width: 200,
       renderCell: (params) => (
         <>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => handleOpenForm(params.row)}
-          >
+          <Button variant="contained" color="primary" onClick={() => handleOpenForm(params.row)}>
             Edit
           </Button>
           <Button
@@ -132,33 +194,44 @@ function Page4() {
     <div style={{ height: 400, width: '100%' }}>
       <h1>Mark List</h1>
       <Button variant="contained" color="primary" onClick={() => handleOpenForm()}>
-       Add Mark 
+        Add Mark
       </Button>
       <DataGrid rows={marks} columns={columns} pageSize={5} checkboxSelection />
-      
-      {/* Ürün ekleme/güncelleme formu için dialog */}
+
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{selectedMark ? "Update Mark" : "Add Mark"}</DialogTitle>
+        <DialogTitle>{selectedMark ? 'Update Mark' : 'Add Mark'}</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <TextField
-              {...register('name', { required: true })}
-              label="Mark Name"
-              fullWidth
-              margin="dense"
+            <TextField {...register('name', { required: true })} label="Mark Name" fullWidth margin="dense" />
+            <input
+              type="file"
+              {...register('image')}
+              accept="image/*"
+              style={{ marginTop: '16px' }}
             />
-            <TextField
-              {...register('link', { required: true })}
-              label="Mark Link"
-              fullWidth
-              margin="dense"
-            />
+            <FormControl fullWidth margin="dense">
+              <InputLabel>Category</InputLabel>
+              <Controller
+                name="categoryId"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <Select {...field} label="Category">
+                    {categories.map((category) => (
+                      <MenuItem key={category.id} value={category.id}>
+                        {category.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                )}
+              />
+            </FormControl>
             <DialogActions>
               <Button onClick={handleClose} color="secondary">
                 Cancel
               </Button>
               <Button type="submit" color="primary">
-                {selectedMark ? "Update" : "Add"}
+                {selectedMark ? 'Update' : 'Add'}
               </Button>
             </DialogActions>
           </form>
@@ -166,6 +239,6 @@ function Page4() {
       </Dialog>
     </div>
   );
-}
+};
 
-export default Page4;
+export default Mark;
