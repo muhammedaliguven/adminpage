@@ -29,7 +29,7 @@ const Login = () => {
         localStorage.setItem('token', response.data.token);
 
         // Ana sayfaya yönlendir
-        navigate('/sidebar');
+        navigate('/app/category')
       }
     } catch (error) {
       // Hata durumunda hata mesajını göster
@@ -40,7 +40,7 @@ const Login = () => {
     // Kullanıcı adı ve şifreyi kontrol et
     if (username === validUsername && password === validPassword) {
       // Doğruysa ana menüye yönlendir
-      navigate("/sidebar");
+      navigate('/app/category')
     } else {
       // Yanlışsa hata mesajı göster
       setError("Kullanıcı adı veya şifre hatalı!");

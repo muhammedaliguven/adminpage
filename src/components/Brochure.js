@@ -51,6 +51,7 @@ const Brochure = () => {
       setValue('markId', brochure.markId);
       setValue('startDate', dayjs(brochure.startDate));
       setValue('endDate', dayjs(brochure.endDate));
+      setValue('description', brochure.description); // Description alanını dolduruyoruz
       setPdfFile(null); // Yeni dosya yüklendiğinde eskiyi sıfırla
     } else {
       reset();
@@ -114,6 +115,7 @@ const Brochure = () => {
           { field: 'id', headerName: 'ID', width: 90 },
           { field: 'startDate', headerName: 'Start Date', width: 200 },
           { field: 'endDate', headerName: 'End Date', width: 200 },
+          { field: 'description', headerName: 'Description', width: 200 },
           {
             field: 'markId',
             headerName: 'Mark',
@@ -133,11 +135,10 @@ const Brochure = () => {
                 return (
                   <a
                     href={pdfDataUri}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    download="brochure.pdf" // Dosya indirme özelliği
                     onClick={(e) => e.stopPropagation()} // Tıklamayı izole et
                   >
-                    View PDF
+                    Download PDF
                   </a>
                 );
               }
