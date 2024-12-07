@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import axios from 'axios';
 import { useForm, Controller } from 'react-hook-form';
 import {
   Button,
@@ -18,6 +17,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
+import axiosInstance from '../config/axiosInstance';
 
 const Brochure = () => {
   const [brochures, setBrochures] = useState([]);
@@ -33,13 +33,13 @@ const Brochure = () => {
   }, []);
 
   const fetchBrochures = () => {
-    axios.get('/api/brochure/getAll')
+    axiosInstance.get('/api/brochure/getAll')
       .then((response) => setBrochures(response.data))
       .catch((error) => console.error("Error fetching brochures:", error));
   };
 
   const fetchMarks = () => {
-    axios.get('/api/mark/getAll')
+    axiosInstance.get('/api/mark/getAll')
       .then((response) => setMarks(response.data))
       .catch((error) => console.error("Error fetching marks:", error));
   };
@@ -81,7 +81,7 @@ const Brochure = () => {
     }
 
     if (selectedBrochure) {
-      axios.put(`/api/brochure/update/${selectedBrochure.id}`, formData, {
+      axiosInstance.put(`/api/brochure/update/${selectedBrochure.id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
         .then((response) => {
@@ -93,7 +93,7 @@ const Brochure = () => {
         })
         .catch((error) => console.error("Error updating brochure:", error));
     } else {
-      axios.post('/api/brochure/create', formData, {
+      axiosInstance.post('/api/brochure/create', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
         .then((response) => {
@@ -162,7 +162,7 @@ const Brochure = () => {
                   variant="contained"
                   color="secondary"
                   onClick={() =>
-                    axios.delete(`/api/brochure/delete/${params.row.id}`)
+                    axiosInstance.delete(`/api/brochure/delete/${params.row.id}`)
                       .then(() => setBrochures(brochures.filter((b) => b.id !== params.row.id)))
                       .catch((error) => console.error("Error deleting brochure:", error))
                   }

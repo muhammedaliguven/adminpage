@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import axios from 'axios';
+import axiosInstance from '../config/axiosInstance';
 import { useForm } from 'react-hook-form';
 import {
   Button,
@@ -22,7 +22,7 @@ function Category() {
   }, []);
 
   const fetchCategories = () => {
-    axios.get('/api/category/getAll')
+    axiosInstance.get('/api/category/getAll')
       .then((response) => {
         setCategories(response.data);
       })
@@ -39,7 +39,7 @@ function Category() {
     }
 
     try {
-      await axios.post('/api/category/create', formData, {
+      await axiosInstance.post('/api/category/create', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -60,7 +60,7 @@ function Category() {
     }
 
     try {
-      await axios.put(`/api/category/update/${selectedCategory.id}`, formData, {
+      await axiosInstance.put(`/api/category/update/${selectedCategory.id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -74,7 +74,7 @@ function Category() {
   };
 
   const deleteCategory = (id) => {
-    axios.delete(`/api/category/delete/${id}`)
+    axiosInstance.delete(`/api/category/delete/${id}`)
       .then(() => {
         setCategories(categories.filter((category) => category.id !== id));
       })

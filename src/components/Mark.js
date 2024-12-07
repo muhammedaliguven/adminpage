@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import axios from 'axios';
+import axiosInstance from '../config/axiosInstance';
 import { useForm, Controller } from 'react-hook-form';
 import {
   Button,
@@ -30,7 +30,7 @@ const Mark = () => {
 
   
   const fetchMarks = () => {
-    axios
+    axiosInstance
       .get('/api/mark/getAll')
       .then((response) => {
         console.log('Fetched marks:', response.data); // Gelen veriyi konsola yazdır
@@ -42,7 +42,7 @@ const Mark = () => {
   };
 
   const fetchCategories = () => {
-    axios
+    axiosInstance
       .get('/api/category/getAll')
       .then((response) => setCategories(response.data))
       .catch((error) => console.error('Error fetching categories:', error));
@@ -76,7 +76,7 @@ const Mark = () => {
     }
   
     try {
-      await axios.post('/api/mark/create', formData, {
+      await axiosInstance.post('/api/mark/create', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -97,7 +97,7 @@ const Mark = () => {
     }
     formData.append('categoryId', data.categoryId);
   
-    axios
+    axiosInstance
       .put(`/api/mark/update/${selectedMark.id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -112,24 +112,12 @@ const Mark = () => {
 
   // Mark silme işlemi
   const deleteMark = (id) => {
-    axios
+    axiosInstance
       .delete(`/api/mark/delete/${id}`)
       .then(() => fetchMarks())
       .catch((error) => console.error('Error deleting mark:', error));
   };
 
-  // Base64 formatına dönüştürme işlemi
-  const convertToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64String = reader.result.split(',')[1]; // Sadece Base64 kısmını al
-        resolve(base64String);
-      };
-      reader.onerror = (error) => reject(error);
-    });
-  };
 
   // Form gönderimi
   const onSubmit = (data) => {

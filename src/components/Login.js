@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from 'axios';
+import axiosInstance from '../config/axiosInstance';
 import '../styles.css';
 
 const Login = () => {
@@ -18,7 +18,7 @@ const Login = () => {
     const validPassword = "123";
 
     try {
-      const response = await axios.post('/api/user/isPresent', {
+      const response = await axiosInstance.post('/api/user/isPresent', {
         username,
         password,
       });
